@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     """Application settings."""
     
     # API Keys
-    openai_api_key: str
-    tavily_api_key: str
+    openai_api_key: Optional[str] = None
+    tavily_api_key: Optional[str] = None
     phoenix_api_key: Optional[str] = None
     anthropic_api_key: Optional[str] = None
     
