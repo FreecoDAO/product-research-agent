@@ -153,7 +153,7 @@ class TestTavilyShoppingTool:
         """Test edge cases in price extraction."""
         tool = TavilyShoppingTool()
 
-        # Test invalid prices
+        # Test invalid prices that should return None
         invalid_cases = [
             "Price: $0.50",  # Too low
             "Price: $999,999.99",  # Too high
@@ -163,9 +163,8 @@ class TestTavilyShoppingTool:
 
         for text in invalid_cases:
             price = tool._extract_price(text)
-            # Should either be None or within reasonable range
-            if price is not None:
-                assert 10 <= price <= 50000
+            # Should return None for invalid prices
+            assert price is None
 
     @pytest.mark.asyncio
     async def test_search_error_handling(self):

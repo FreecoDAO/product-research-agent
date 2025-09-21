@@ -122,8 +122,10 @@ class TavilyShoppingTool:
         # Look for price patterns like $99.99, $1,299, etc.
         price_patterns = [
             r'\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
-            r'(\d{1,3}(?:,\d{3})*(?:\.\d{2})?) USD',
-            r'Price: \$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
+            r'\b(\d{1,4}(?:,\d{3})*(?:\.\d{2})?)\s*USD\b',
+            r'Price:\s*\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
+            r'Sale\s+price\s+\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
+            r'Now:\s*\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',
         ]
         
         for pattern in price_patterns:
@@ -131,7 +133,10 @@ class TavilyShoppingTool:
             if match:
                 try:
                     price_str = match.group(1).replace(',', '')
-                    return float(price_str)
+                    price = float(price_str)
+                    # Return only reasonable prices (avoid extraction errors)
+                    if 1.0 <= price <= 50000:
+                        return price
                 except ValueError:
                     continue
         
