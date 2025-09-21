@@ -98,7 +98,10 @@ class TestTavilyShoppingTool:
 
         for text, expected_price in test_cases:
             extracted_price = tool._extract_price(text)
-            assert extracted_price == expected_price
+            if expected_price is None:
+                assert extracted_price is None
+            else:
+                assert extracted_price == expected_price
 
     def test_brand_extraction(self):
         """Test brand extraction from product titles."""
