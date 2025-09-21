@@ -94,7 +94,7 @@ Success Criteria:
 
 Phase 2: Expansion (After MVP Validation)
 Tasks:
-1. Add direct retailer scraping (Amazon first, then others)
+1. Add direct retailer scraping (Amazon)
 2. Enhance review analysis with authenticity filtering
 3. Add alternative product suggestions
 4. Implement price comparison across multiple sources

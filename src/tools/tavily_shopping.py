@@ -26,8 +26,8 @@ class TavilyShoppingTool:
         self, 
         query: str, 
         max_results: int = 10,
-        include_domains: List[str] = None,
-        exclude_domains: List[str] = None
+        include_domains: Optional[List[str]] = None,
+        exclude_domains: Optional[List[str]] = None
     ) -> List[SearchResult]:
         """
         Search for products using Tavily API.
