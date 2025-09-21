@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m pytest --cov=src.core.tracing --cov-report=term-missing tests/test_tracing.py -v)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
