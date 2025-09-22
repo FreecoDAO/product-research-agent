@@ -25,16 +25,28 @@ class ProductResearcher:
             logger.warning("OpenAI API key not provided - enhanced analysis will be limited")
             self.llm = None
         else:
-            self.llm = ChatOpenAI(
-                model=settings.model_name,
-                api_key=settings.openai_api_key,
-                temperature=0.1,
-                max_tokens=settings.max_tokens,
-                model_kwargs={
-                    "reasoning_effort": settings.reasoning_effort,
-                    "service_tier": settings.service_tier
-                }
-            )
+            # Try to pass parameters directly, fall back to model_kwargs if not supported
+            try:
+                self.llm = ChatOpenAI(
+                    model=settings.model_name,
+                    api_key=settings.openai_api_key,
+                    temperature=0.1,
+                    max_tokens=settings.max_tokens,
+                    reasoning_effort=settings.reasoning_effort,
+                    service_tier=settings.service_tier
+                )
+            except TypeError:
+                # Fall back to model_kwargs for older versions
+                self.llm = ChatOpenAI(
+                    model=settings.model_name,
+                    api_key=settings.openai_api_key,
+                    temperature=0.1,
+                    max_tokens=settings.max_tokens,
+                    model_kwargs={
+                        "reasoning_effort": settings.reasoning_effort,
+                        "service_tier": settings.service_tier
+                    }
+                )
 
         self.tavily_tool = TavilyShoppingTool()
 

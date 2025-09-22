@@ -2,7 +2,7 @@ modules = ["nodejs-20", "python-3.11"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["arrow-cpp", "bash", "c-ares", "cacert", "cargo", "glibcLocales", "grpc", "libffi", "libiconv", "libxcrypt", "openssl", "pkg-config", "rustc", "xsimd", "zlib"]
+packages = ["arrow-cpp", "bash", "c-ares", "cacert", "cargo", "glibcLocales", "grpc", "libffi", "libiconv", "libxcrypt", "openssl", "pkg-config", "rustc", "xsimd", "zlib", "jupyter"]
 
 [agent]
 expertMode = true

@@ -42,16 +42,28 @@ class ProductResearchOrchestrator:
             logger.warning("OpenAI API key not provided - orchestrator will not function")
             self.llm = None
         else:
-            self.llm = ChatOpenAI(
-                model=settings.model_name,
-                api_key=settings.openai_api_key,
-                temperature=0.1,
-                max_tokens=settings.max_tokens,
-                model_kwargs={
-                    "reasoning_effort": settings.reasoning_effort,
-                    "service_tier": settings.service_tier
-                }
-            )
+            # Try to pass parameters directly, fall back to model_kwargs if not supported
+            try:
+                self.llm = ChatOpenAI(
+                    model=settings.model_name,
+                    api_key=settings.openai_api_key,
+                    temperature=0.1,
+                    max_tokens=settings.max_tokens,
+                    reasoning_effort=settings.reasoning_effort,
+                    service_tier=settings.service_tier
+                )
+            except TypeError:
+                # Fall back to model_kwargs for older versions
+                self.llm = ChatOpenAI(
+                    model=settings.model_name,
+                    api_key=settings.openai_api_key,
+                    temperature=0.1,
+                    max_tokens=settings.max_tokens,
+                    model_kwargs={
+                        "reasoning_effort": settings.reasoning_effort,
+                        "service_tier": settings.service_tier
+                    }
+                )
 
         self.tavily_tool = TavilyShoppingTool()
         self.workflow = self._build_workflow()
@@ -338,11 +350,16 @@ class ProductResearchOrchestrator:
             """)
         return "\n".join(formatted)
 
-    def _extract_review_content(self, search_results: List[Dict[str, Any]]) -> str:
+    def _extract_review_content(self, search_results) -> str:
         """Extract review-like content from search results."""
         review_content = []
         for result in search_results[:5]:  # Check first 5 results
-            content = result.get("content", "")
+            # Handle both dict and SearchResult objects
+            if hasattr(result, 'content'):
+                content = result.content
+            else:
+                content = result.get("content", "")
+
             if any(keyword in content.lower() for keyword in ["review", "rating", "stars", "customer", "buyer"]):
                 review_content.append(content[:300])  # Truncate long content
 

@@ -31,40 +31,93 @@ def setup_phoenix_tracing(
     global _tracer, _tracer_provider
 
     try:
-        # Try to import Phoenix dependencies
+        # Try to import minimal tracing dependencies
         try:
-            from phoenix.otel import register
             from openinference.instrumentation.langchain import LangChainInstrumentor
             from opentelemetry import trace
+            from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+            from opentelemetry.sdk import trace as trace_sdk
+            from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+            from opentelemetry.sdk.resources import Resource
         except ImportError as e:
-            logger.warning(f"Phoenix dependencies not available: {e}")
-            logger.info("Tracing will be disabled. Install with: pip install arize-phoenix openinference-instrumentation-langchain")
+            logger.warning(f"Tracing dependencies not available: {e}")
+            logger.info("Tracing will be disabled. Install with: pip install openinference-instrumentation-langchain opentelemetry-sdk")
             return False
 
-        # Configure Phoenix tracer
+        # Check if already initialized
+        if _tracer is not None:
+            logger.debug("Tracing already initialized")
+            return True
+
+        # Configure tracer using OpenTelemetry
         try:
             if api_key and space_id:
-                # Cloud/production setup
+                # Cloud/production setup using Arize endpoints
                 logger.info(f"Setting up Phoenix cloud tracing for project: {project_name}")
-                _tracer_provider = register(
-                    project_name=project_name,
-                    api_key=api_key,
-                    space_id=space_id
+
+                # Configure OTLP exporter for Arize Cloud
+                span_exporter = OTLPSpanExporter(
+                    endpoint="https://otlp.arize.com/v1/traces",
+                    headers={
+                        "space_id": space_id,
+                        "api_key": api_key,
+                    }
                 )
+
+                # Create tracer provider
+                _tracer_provider = trace_sdk.TracerProvider(
+                    resource=Resource.create({
+                        "service.name": project_name,
+                        "service.version": "1.0.0"
+                    })
+                )
+
+                # Add span processor
+                _tracer_provider.add_span_processor(
+                    BatchSpanProcessor(span_exporter)
+                )
+
+                # Set global tracer provider
+                trace.set_tracer_provider(_tracer_provider)
+
             else:
-                # Local development setup
-                logger.info(f"Setting up Phoenix local tracing for project: {project_name}")
-                _tracer_provider = register(
-                    project_name=project_name
+                # Local development setup using console output
+                logger.info(f"Setting up local console tracing for project: {project_name}")
+
+                # Use console exporter for local development
+                span_exporter = ConsoleSpanExporter()
+
+                # Create tracer provider
+                _tracer_provider = trace_sdk.TracerProvider(
+                    resource=Resource.create({
+                        "service.name": project_name,
+                        "service.version": "1.0.0"
+                    })
                 )
+
+                # Add span processor
+                _tracer_provider.add_span_processor(
+                    BatchSpanProcessor(span_exporter)
+                )
+
+                # Set global tracer provider
+                trace.set_tracer_provider(_tracer_provider)
 
             # Get tracer instance
             _tracer = trace.get_tracer(__name__)
 
-            # Instrument LangChain (covers DeepAgents and LangGraph)
-            LangChainInstrumentor().instrument(tracer_provider=_tracer_provider)
+            # Instrument LangChain (covers DeepAgents and LangGraph) only if not already instrumented
+            try:
+                instrumentor = LangChainInstrumentor()
+                if not instrumentor.is_instrumented_by_opentelemetry:
+                    instrumentor.instrument()
+                    logger.info("LangChain instrumentation enabled")
+                else:
+                    logger.debug("LangChain already instrumented")
+            except Exception as e:
+                logger.warning(f"LangChain instrumentation failed: {e}")
 
-            logger.info("Phoenix tracing setup completed successfully")
+            logger.info("Tracing setup completed successfully")
             return True
 
         except Exception as e:
