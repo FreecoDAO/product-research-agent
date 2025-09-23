@@ -114,6 +114,7 @@ jupyter==1.1.1
 notebook==7.4.5
 ipykernel==6.30.1
 ipywidgets==8.1.7
+pyzmq==25.1.2
 matplotlib==3.10.6
 seaborn==0.13.2
 plotly==6.3.0

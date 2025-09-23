@@ -6,3 +6,7 @@ packages = ["arrow-cpp", "bash", "c-ares", "cacert", "cargo", "glibcLocales", "g
 
 [agent]
 expertMode = true
+
+[[ports]]
+localPort = 8888
+externalPort = 80
