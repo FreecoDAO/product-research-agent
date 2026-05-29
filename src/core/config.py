@@ -14,12 +14,13 @@ class Settings(BaseSettings):
     phoenix_api_key: Optional[str] = None
     anthropic_api_key: Optional[str] = None
     
-    # GPT-5 Model Settings
-    model_name: str = "gpt-5"
+    # LLM Model Settings — defaults to Novita AI DeepSeek V4 Flash
+    openai_base_url: Optional[str] = "https://api.novita.ai/openai"
+    model_name: str = "deepseek/deepseek-v4-flash"
     reasoning_effort: str = "high"  # minimal, low, medium, high
     verbosity: str = "medium"  # low, medium, high
-    service_tier: str = "priority"  # for faster responses
-    max_tokens: int = 2000
+    service_tier: str = "default"  # for faster responses
+    max_tokens: int = 4096
     
     # Application Settings
     max_search_results: int = 10

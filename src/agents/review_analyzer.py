@@ -25,28 +25,15 @@ class ReviewAnalyzer:
             logger.warning("OpenAI API key not provided - review analysis will be limited")
             self.llm = None
         else:
-            # Try to pass parameters directly, fall back to model_kwargs if not supported
-            try:
-                self.llm = ChatOpenAI(
-                    model=settings.model_name,
-                    api_key=settings.openai_api_key,
-                    temperature=0.1,
-                    max_tokens=settings.max_tokens,
-                    reasoning_effort=settings.reasoning_effort,
-                    service_tier=settings.service_tier
-                )
-            except TypeError:
-                # Fall back to model_kwargs for older versions
-                self.llm = ChatOpenAI(
-                    model=settings.model_name,
-                    api_key=settings.openai_api_key,
-                    temperature=0.1,
-                    max_tokens=settings.max_tokens,
-                    model_kwargs={
-                        "reasoning_effort": settings.reasoning_effort,
-                        "service_tier": settings.service_tier
-                    }
-                )
+            llm_kwargs = dict(
+                model=settings.model_name,
+                api_key=settings.openai_api_key,
+                temperature=0.1,
+                max_tokens=settings.max_tokens,
+            )
+            if settings.openai_base_url:
+                llm_kwargs["base_url"] = settings.openai_base_url
+            self.llm = ChatOpenAI(**llm_kwargs)
 
     async def analyze_reviews(
         self,
